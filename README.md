@@ -49,7 +49,7 @@ source path/to/venv/source/activate
 
 ## Usage
 
-All the .py scripts have a command-line arguments to specify all variables of the execution.
+All the .py scripts have command-line arguments to specify all variables of the execution.
 
 ```shell
 python evaluateAgentsAndPgs.py    --layout LAYOUT
