@@ -2,6 +2,7 @@ import csv
 import random
 from domain.desire import Desire
 import matplotlib.pyplot as plt
+from matplotlib.patches import Rectangle
 from src.interventionalNode import InterventionalNode
 
 import sys
@@ -301,36 +302,57 @@ class InterventionalPolicyGraphAndTrajectories(PolicyGraphAndTrajectories):
         arrayObservationsNoProbability.sort(reverse=True)
         arrayObservations = arrayObservationsProbability + arrayObservationsNoProbability
 
+        # Set figure with fixed size and DPI
+        fig, ax = plt.subplots(figsize=(12, 7), dpi=100)
+        fig.patch.set_facecolor('white')
+        
         x_obs = list(range(len(arrayObservations)))
-        plt.bar(x_obs, arrayObservations, color='red', alpha=0.5, label='Observations')
+        split_obs = len(arrayObservationsProbability) - 0.5
 
-        # dashed line where intentional section ends
-        split_obs = len(arrayObservationsProbability) - 0.5  # between bars
-        plt.axvline(x=split_obs, color='black', linestyle='dashed',
-                    linewidth=1, label='Original / Non-Original split')
-
-        plt.yscale('log')
-        plt.xlabel('Sorted nodes')
-        plt.ylabel('Number of actions')
-        plt.title('Observational transitions per node')
-        plt.legend()
-        plt.tight_layout()
-        plt.savefig(pathObservationImages)
-        plt.clf()
+        ax.bar(x_obs, arrayObservations, color='red', alpha=0.5, label='Observations', 
+               edgecolor='none', width=1.0)
+        # remove horizontal padding so first/last bars touch the axes
+        if len(x_obs) > 0:
+            ax.set_xlim(-0.5, len(x_obs) - 0.5)
+        
+        ax.set_yscale('log')
+        ax.set_xlabel('Sorted nodes', fontsize=26)
+        ax.set_ylabel('Number of actions', fontsize=26)
+        ax.set_title('Observational transitions per node', fontsize=28)
+        ax.axvline(x=split_obs, color='black', linewidth=2, label='Original / Non-Original split')
+        ax.tick_params(axis='both', which='major', labelsize=22)
+        ax.legend(fontsize=26)
+        fig.tight_layout()
+        fig.savefig(pathObservationImages, dpi=150, bbox_inches='tight', facecolor='white')
+        plt.close(fig)
 
         # ---------- bar plot: INTERVENTIONS ----------
+        fig, ax = plt.subplots(figsize=(12, 7), dpi=100)
+        fig.patch.set_facecolor('white')
+        
         x_int = list(range(len(arrayInterventions)))
-        plt.bar(x_int, arrayInterventions, color='blue', alpha=0.5, label='Interventions')
-
         split_int = len(arrayInterventionsProbability) - 0.5
-        plt.axvline(x=split_int, color='black', linestyle='dashed',
-                    linewidth=1, label='Original / Non-original split')
 
-        plt.yscale('log')
-        plt.xlabel('Sorted nodes')
-        plt.ylabel('Number of actions')
-        plt.title('Interventional transitions per node')
-        plt.legend()
-        plt.tight_layout()
-        plt.savefig(pathInverventionImages)
-        plt.clf()
+        ax.bar(x_int, arrayInterventions, color='blue', alpha=0.5, label='Interventions',
+               edgecolor='none', width=1.0)
+        # remove horizontal padding so first/last bars touch the axes
+        if len(x_int) > 0:
+            ax.set_xlim(-0.5, len(x_int) - 0.5)
+
+        ax.set_yscale('log')
+        ax.set_xlabel('Sorted nodes', fontsize=26)
+        ax.set_ylabel('Number of actions', fontsize=26)
+        ax.set_title('Interventional transitions per node', fontsize=28)
+        ax.axvline(x=split_int, color='black', linewidth=2, label='Original / Non-original split')
+        ax.tick_params(axis='both', which='major', labelsize=22)
+        ax.legend(fontsize=26)
+        fig.tight_layout()
+        fig.savefig(pathInverventionImages, dpi=150, bbox_inches='tight', facecolor='white')
+        plt.close(fig)
+        
+    def getNodesWithIntention(self, c_threshold: float=0.5):
+        nodesWithIntention = {}
+        for node in self.nodes:
+            if (any(node.intention[d] >= c_threshold for d in node.intention)) and node.node_id not in nodesWithIntention:
+                nodesWithIntention[node.node_id] = node.intention
+        return nodesWithIntention
